@@ -31,6 +31,16 @@ Definitions for musical notes
 #define HT                        HOLD_NOTE_ADJUSTMENT            
 
 /* Musical note definitions */
+#define Note_D2                   (u16)73
+#define NOTE_D2_SHARP             (u16)78
+#define NOTE_E2                   (u16)82
+#define NOTE_F2                   (u16)87
+#define NOTE_F2_SHARP             (u16)93
+#define NOTE_G2                   (u16)98
+#define NOTE_G2_SHARP             (u16)104
+#define NOTE_A2                   (u16)110
+#define NOTE_A2_SHARP             (u16)117
+#define NOTE_B2                   (u16)123
 #define NOTE_C3                   (u16)131
 #define NOTE_C3_SHARP             (u16)139
 #define NOTE_D3_FLAT              (u16)139
@@ -85,6 +95,17 @@ Definitions for musical notes
 #define NONE                      (u16)0
 
 /* Musical note definitions - short hand */
+#define D2                   (u32)Note_D2
+#define D2S                  (u32)NOTE_D2_SHARP
+#define E2                   (u32)NOTE_E2
+#define F2                   (u32)NOTE_F2
+#define F2S                  (u32)NOTE_F2_SHARP
+#define G2                   (u32)NOTE_G2
+#define G2S                  (u32)NOTE_G2_SHARP
+#define A2                   (u32)NOTE_A2
+#define A2S                  (u32)NOTE_A2_SHARP
+#define B2              (u32)NOTE_B2
+
 #define C3                   (u32)NOTE_C3
 #define C3S                  (u32)NOTE_C3_SHARP
 #define D3                   (u32)NOTE_D3
@@ -134,3 +155,7 @@ Definitions for musical notes
 #define A6S                  (u32)NOTE_A6_SHARP
 #define B6                   (u32)NOTE_B6
 #define NO                   (u32)NONE
+
+
+
+
