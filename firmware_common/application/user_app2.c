@@ -46,6 +46,12 @@ Variable names shall start with "UserApp2_" and be declared as static.
 static fnCode_type UserApp2_StateMachine;            /* The state machine function pointer */
 //static u32 UserApp2_u32Timeout;                      /* Timeout counter used across states */
 
+static u8 UserApp2_u8Code[CODELENGTH];
+static u8 UserApp2_u8Attempt[CODELENGTH];
+static u32 UserApp2_u32Counter;
+static bool UserApp2_bGameInProgress;
+static u8 UserApp2_u8NumberOfButtonsPressed;
+ u8 u8WelcomeMessage="Ready to Start";
 
 /**********************************************************************************************************************
 Function Definitions
@@ -54,7 +60,7 @@ Function Definitions
 /*--------------------------------------------------------------------------------------------------------------------*/
 /* Public functions                                                                                                   */
 /*--------------------------------------------------------------------------------------------------------------------*/
-/*testing lkdga;*/
+
 
 /*--------------------------------------------------------------------------------------------------------------------*/
 /* Protected functions                                                                                                */
@@ -74,6 +80,21 @@ Promises:
 */
 void UserApp2Initialize(void)
 {
+  
+  
+  /*initialize the variables*/
+  for(u8 i=0;i<4;i++)
+  {
+    UserApp2_u8Code[i]=i;
+   
+  }
+  UserApp2_u32Counter=0;
+  UserApp2_bGameInProgress=TRUE;
+  UserApp2_u8NumberOfButtonsPressed=0;
+  
+  LCDClearChars(LINE1_START_ADDR,20);
+  LCDMessage(LINE1_START_ADDR,&au8WelcomeMessage);
+  
   /* If good initialization, set state to Idle */
   if( 1 )
   {
@@ -122,9 +143,60 @@ State Machine Function Definitions
 /* Wait for ??? */
 static void UserApp2SM_Idle(void)
 {
-    
+  if(UserApp2_bGameInProgress){
+  UserApp2_u32Counter++;
+  }
+  if(WasButtonPressed(BUTTON0))
+  {
+    ButtonAcknowledge(BUTTON0);
+    DebugPrintf("Button 0 pressed");
+    UserApp2_u8Attempt[UserApp2_u8NumberOfButtonsPressed]=0;
+    UserApp2_u8NumberOfButtonsPressed++;
+  }
+    if(WasButtonPressed(BUTTON1))
+  {
+    ButtonAcknowledge(BUTTON1);
+    DebugPrintf("Button 1 pressed");
+    UserApp2_u8Attempt[UserApp2_u8NumberOfButtonsPressed]=1;
+     UserApp2_u8NumberOfButtonsPressed++;
+  }
+    if(WasButtonPressed(BUTTON2))
+  {
+    ButtonAcknowledge(BUTTON2);
+    DebugPrintf("Button 2 pressed");
+    UserApp2_u8Attempt[UserApp2_u8NumberOfButtonsPressed]=2;
+     UserApp2_u8NumberOfButtonsPressed++;
+  }
+    if(WasButtonPressed(BUTTON3))
+  {
+    ButtonAcknowledge(BUTTON3);
+    DebugPrintf("Button 3 pressed");
+    UserApp2_u8Attempt[UserApp2_u8NumberOfButtonsPressed]=3;
+     UserApp2_u8NumberOfButtonsPressed++;
+  }
+  if(UserApp2_u8NumberOfButtonsPressed==4)
+  {
+  UserApp2_CompareCodes();
+  UserApp2_u8NumberOfButtonsPressed=0;
+  }
 } /* end UserApp2SM_Idle() */
-     
+ 
+static bool UserApp2_CompareCodes()
+{
+  for(u8 i=0;i<CODELENGTH;i++)
+  {
+    if (UserApp2_u8Code[i]!=UserApp2_u8Attempt[i])
+    {
+      LedOn(RED);
+        return FALSE;
+    }
+    
+  }
+  LedOn(BLUE);
+    return TRUE;
+}
+
+
 #if 0
 /*-------------------------------------------------------------------------------------------------------------------*/
 /* Handle an error */
