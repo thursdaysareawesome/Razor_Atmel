@@ -51,7 +51,16 @@ static u8 UserApp2_u8Attempt[CODELENGTH];
 static u32 UserApp2_u32Counter;
 static bool UserApp2_bGameInProgress;
 static u8 UserApp2_u8NumberOfButtonsPressed;
- u8 u8WelcomeMessage="Ready to Start";
+static bool bCompare=TRUE; 
+static u8 u8Buzzer=0;
+ u8* u8WelcomeMessage="Ready to Start";
+ u8* u8SetPassword="Enter code";
+ u8* u8StartGameTop="Press any button";
+ u8* u8StartGameBot="to start!" ;
+ /*hint messages*/
+ static u8* u8HintCorrectButton[]={"No correct buttons","1 correct button","2 correct buttons","3 correct buttons","4 correct buttons"} ;
+static u8* u8HintCorrectPlace[]= {"No correct spot","1 correct spot","2 correct spots","3 correct spots"};
+ 
 
 /**********************************************************************************************************************
 Function Definitions
@@ -83,22 +92,23 @@ void UserApp2Initialize(void)
   
   
   /*initialize the variables*/
-  for(u8 i=0;i<4;i++)
+  /*for(u8 i=0;i<4;i++)
   {
     UserApp2_u8Code[i]=i;
    
-  }
+  }*/
   UserApp2_u32Counter=0;
-  UserApp2_bGameInProgress=TRUE;
-  UserApp2_u8NumberOfButtonsPressed=0;
+  UserApp2_bGameInProgress=FALSE;
+  UserApp2_u8NumberOfButtonsPressed=0; 
   
-  LCDClearChars(LINE1_START_ADDR,20);
-  LCDMessage(LINE1_START_ADDR,&au8WelcomeMessage);
+ LCDClearChars(LINE1_START_ADDR,20);
+ LCDMessage(LINE1_START_ADDR,u8WelcomeMessage);
   
   /* If good initialization, set state to Idle */
   if( 1 )
   {
-    UserApp2_StateMachine = UserApp2SM_Idle;
+    LCDMessage(LINE2_START_ADDR,u8SetPassword);
+    UserApp2_StateMachine = UserApp2SM_SetPassword;
   }
   else
   {
@@ -140,60 +150,206 @@ State Machine Function Definitions
 **********************************************************************************************************************/
 
 /*-------------------------------------------------------------------------------------------------------------------*/
-/* Wait for ??? */
-static void UserApp2SM_Idle(void)
-{
-  if(UserApp2_bGameInProgress){
-  UserApp2_u32Counter++;
-  }
+static void UserApp2SM_SetPassword(void){
+  if(!UserApp2_bGameInProgress)
+  {
   if(WasButtonPressed(BUTTON0))
   {
     ButtonAcknowledge(BUTTON0);
-    DebugPrintf("Button 0 pressed");
+    UserApp2_u8Code[UserApp2_u8NumberOfButtonsPressed]=0;
+    UserApp2_u8NumberOfButtonsPressed++;
+  }
+    if(WasButtonPressed(BUTTON1))
+  {
+    ButtonAcknowledge(BUTTON1);
+    UserApp2_u8Code[UserApp2_u8NumberOfButtonsPressed]=1;
+     UserApp2_u8NumberOfButtonsPressed++;
+  }
+    if(WasButtonPressed(BUTTON2))
+  {
+    ButtonAcknowledge(BUTTON2);
+    UserApp2_u8Code[UserApp2_u8NumberOfButtonsPressed]=2;
+     UserApp2_u8NumberOfButtonsPressed++;
+  }
+    if(WasButtonPressed(BUTTON3))
+  {
+    ButtonAcknowledge(BUTTON3);
+    UserApp2_u8Code[UserApp2_u8NumberOfButtonsPressed]=3;
+     UserApp2_u8NumberOfButtonsPressed++;
+  }
+ if(UserApp2_u8NumberOfButtonsPressed==4)
+ {
+   UserApp2_bGameInProgress=TRUE;
+   LCDClearChars(LINE1_START_ADDR,20);
+  LCDMessage(LINE1_START_ADDR,u8StartGameTop);
+  LCDClearChars(LINE2_START_ADDR,20);
+  LCDMessage(LINE2_START_ADDR,u8StartGameBot);
+ }
+}
+ else
+ { 
+        
+        if(WasButtonPressed(BUTTON0)||WasButtonPressed(BUTTON1)||WasButtonPressed(BUTTON2)||WasButtonPressed(BUTTON3))
+        {
+          ButtonAcknowledge(BUTTON0);
+          ButtonAcknowledge(BUTTON1);
+          ButtonAcknowledge(BUTTON2);
+          ButtonAcknowledge(BUTTON3);
+          UserApp2_u8NumberOfButtonsPressed=0;
+          LCDClearChars(LINE1_START_ADDR,20);
+          LCDClearChars(LINE2_START_ADDR,20);
+
+         UserApp2_StateMachine = UserApp2SM_AttemptInProgress;
+        }
+ }
+   
+}
+
+static void UserApp2SM_AttemptInProgress(void){
+
+  /*timer for round*/
+  UserApp2_u32Counter++;
+  
+
+  
+  if(WasButtonPressed(BUTTON0))
+  {
+    ButtonAcknowledge(BUTTON0);
     UserApp2_u8Attempt[UserApp2_u8NumberOfButtonsPressed]=0;
     UserApp2_u8NumberOfButtonsPressed++;
   }
     if(WasButtonPressed(BUTTON1))
   {
     ButtonAcknowledge(BUTTON1);
-    DebugPrintf("Button 1 pressed");
     UserApp2_u8Attempt[UserApp2_u8NumberOfButtonsPressed]=1;
      UserApp2_u8NumberOfButtonsPressed++;
   }
     if(WasButtonPressed(BUTTON2))
   {
     ButtonAcknowledge(BUTTON2);
-    DebugPrintf("Button 2 pressed");
     UserApp2_u8Attempt[UserApp2_u8NumberOfButtonsPressed]=2;
      UserApp2_u8NumberOfButtonsPressed++;
   }
     if(WasButtonPressed(BUTTON3))
   {
     ButtonAcknowledge(BUTTON3);
-    DebugPrintf("Button 3 pressed");
     UserApp2_u8Attempt[UserApp2_u8NumberOfButtonsPressed]=3;
      UserApp2_u8NumberOfButtonsPressed++;
   }
   if(UserApp2_u8NumberOfButtonsPressed==4)
   {
-  UserApp2_CompareCodes();
-  UserApp2_u8NumberOfButtonsPressed=0;
+     LCDClearChars(LINE1_START_ADDR,20);
+     LCDClearChars(LINE2_START_ADDR,20);
+
+    bCompare=UserApp2_CompareCodes();
+   UserApp2_u8NumberOfButtonsPressed=0;
   }
+  
+    /*turning off buzzer*/
+  if(bCompare==FALSE){
+    u8Buzzer++;
+    if(u8Buzzer==200)  
+  {  
+    bCompare=TRUE;
+    u8Buzzer=0;
+    PWMAudioOff(BUZZER1);
+    PWMAudioOff(BUZZER2);
+  }
+  }
+if(UserApp2_u32Counter==TIMEDONE)
+{
+           UserApp2_StateMachine = UserApp2SM_ResetGame;
+}
+  
+}/*end of UserAppSM_AttemptInProgress*/
+
+static void UserApp2SM_ResetGame(void){
+  
+   UserApp2_u32Counter=0;
+  UserApp2_bGameInProgress=FALSE;
+  UserApp2_u8NumberOfButtonsPressed=0; 
+  
+ LCDClearChars(LINE1_START_ADDR,20);
+  LCDClearChars(LINE2_START_ADDR,20);
+
+ LCDMessage(LINE1_START_ADDR,u8WelcomeMessage);
+ LCDMessage(LINE2_START_ADDR,u8SetPassword);
+   UserApp2_StateMachine = UserApp2SM_SetPassword;
+  
+}/*end of UserAppSM_AttemptInProgress*/
+
+
+/* Wait for ??? */
+static void UserApp2SM_Idle(void)
+{
+  
 } /* end UserApp2SM_Idle() */
  
 static bool UserApp2_CompareCodes()
 {
+  u8 u8CorrectButton=0;
+  u8 u8CorrectLocation=0;
+ 
+  
+  bool bIdentical=TRUE;
   for(u8 i=0;i<CODELENGTH;i++)
-  {
+  { bool zero=FALSE;
+  bool one=FALSE;
+  bool two=FALSE;
+  bool three=FALSE;
+     for(u8 j=0;j<CODELENGTH;j++)
+    {
+          if (UserApp2_u8Code[i]==UserApp2_u8Attempt[j]&&i==j)
+          {
+            u8CorrectLocation++;
+          }
+          else if (UserApp2_u8Code[i]==UserApp2_u8Attempt[j]&&i!=j)
+          {
+            if(!zero&&UserApp2_u8Code[i]==0)
+            {
+              u8CorrectButton++;
+            zero=TRUE;
+            }
+            if(!one&&UserApp2_u8Code[i]==1)
+            {
+              one=TRUE;
+              u8CorrectButton++;
+            }
+            if(!two&&UserApp2_u8Code[i]==2)
+            {
+              u8CorrectButton++;
+              two=TRUE;
+            }
+            if(!three&&UserApp2_u8Code[i]==3)
+            {
+              three=TRUE;
+              u8CorrectButton++;
+            }
+            
+            
+          }
+          
+         
+    }
     if (UserApp2_u8Code[i]!=UserApp2_u8Attempt[i])
     {
-      LedOn(RED);
-        return FALSE;
+       PWMAudioSetFrequency (BUZZER1,349 );
+       PWMAudioOn(BUZZER1);
+       PWMAudioSetFrequency (BUZZER2, 370);
+       PWMAudioOn(BUZZER2);
+       bIdentical=FALSE;
     }
+ 
     
   }
-  LedOn(BLUE);
-    return TRUE;
+  if(!bIdentical)
+  {
+     LCDMessage(LINE1_START_ADDR,u8HintCorrectButton[u8CorrectButton]);
+     LCDMessage(LINE2_START_ADDR,u8HintCorrectPlace[u8CorrectLocation]);
+  }
+  
+    
+    return bIdentical;
 }
 
 

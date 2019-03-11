@@ -47,8 +47,9 @@ static void UserApp2SM_Idle(void);
 
 static void UserApp2SM_Error(void);         
 static void UserApp2SM_FailedInit(void);        
-
-
+static void UserApp2SM_SetPassword(void);
+static void UserApp2SM_AttemptInProgress(void);
+static void UserApp2SM_ResetGame(void);
 #endif /* __USER_APP2_H */
 
 
