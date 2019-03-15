@@ -54,7 +54,8 @@ extern volatile u32 G_u32ApplicationFlags;             /* From main.c */
 extern volatile u32 G_u32SystemTime1ms;                /* From board-specific source file */
 extern volatile u32 G_u32SystemTime1s;                 /* From board-specific source file */
 
-
+extern volatile bool G_bSuccessful;
+extern volatile bool G_bFailure;
 /***********************************************************************************************************************
 Global variable definitions with scope limited to this local application.
 Variable names shall start with "UserApp1_" and be declared as static.
@@ -63,6 +64,8 @@ static fnCode_type UserApp1_StateMachine;            /* The state machine functi
 static u32 UserApp1_u32Timeout;                      /* Timeout counter used across states */
 
 
+static u8 u8FailOn;
+static u8 u8SuccessOn;
 /**********************************************************************************************************************
 Function Definitions
 **********************************************************************************************************************/
@@ -140,20 +143,17 @@ State Machine Function Definitions
 
 static void UserApp1SM_Idle(void)
 {
+if(G_bFailure==TRUE)
+{
+  u8FailOn=1;
+}
+else
+{
+  u8FailOn=0;
+}
 
-  static u8  u8next_press=0;
- if (WasButtonPressed(BUTTON3)&&u8next_press==0)
- {
-   u8next_press=1;
-   ButtonAcknowledge(BUTTON3);
- }
- else if (WasButtonPressed(BUTTON3)&&u8next_press==1)
- {
-   u8next_press=0;
-   ButtonAcknowledge(BUTTON3);
- }
  
- switch(u8next_press)
+ switch(u8FailOn)
  {
 case 1:
  {
@@ -223,46 +223,7 @@ if(IsTimeUp(&u32RightTimer,(u32)u16CurrentDurationRight))
             {
               PWMAudioSetFrequency (BUZZER1, au16NotesRight[u8CurrentIndex]);
               PWMAudioOn(BUZZER1);
-              /* LED control */
-              switch(au16NotesRight[u8CurrentIndex])
-        {
-          case G4:
-            LedOn(WHITE);
-            break;
-            
-          case G4S:
-            LedOn(PURPLE);
-            break;
-            
-          case C5:
-            LedOn(BLUE);
-            break;
-            
-          case D5:
-            LedOn(CYAN);
-            break;
-            
-          case D5S:
-            LedOn(GREEN);
-            break;
-            
-          case F5:
-            LedOn(YELLOW);
-            break;
-            
-          case G5:
-            LedOn(ORANGE);
-            break;
-            
-          case D6:
-            LedOn(RED);
-            break;
-            
-          default:
-            break;
-            
-        } /* end switch */
-       
+              
             }
             else
             {
@@ -277,14 +238,7 @@ if(IsTimeUp(&u32RightTimer,(u32)u16CurrentDurationRight))
   else
    {
      PWMAudioOff(BUZZER1);
-     LedOff(WHITE);
-        LedOff(PURPLE);
-        LedOff(BLUE);
-        LedOff(CYAN);
-        LedOff(GREEN);
-        LedOff(YELLOW);
-        LedOff(ORANGE);
-        LedOff(RED);
+     
    }
     } /*end if(bNoteActiveNextRight)*/
             else{
@@ -293,14 +247,7 @@ if(IsTimeUp(&u32RightTimer,(u32)u16CurrentDurationRight))
               u32RightTimer=G_u32SystemTime1ms;
               u16CurrentDurationRight = u16NoteSilentDurationRight;
               bNoteActiveNextRight=TRUE;
-        LedOff(WHITE);
-        LedOff(PURPLE);
-        LedOff(BLUE);
-        LedOff(CYAN);
-        LedOff(GREEN);
-        LedOff(YELLOW);
-        LedOff(ORANGE);
-        LedOff(RED);
+      
               
               u8IndexRight++;
               if(u8IndexRight==sizeof(au16NotesRight)/sizeof(u16))
@@ -356,65 +303,19 @@ if(IsTimeUp(&u32LeftTimer, (u32)u16CurrentDurationLeft))
       {
         PWMAudioSetFrequency(BUZZER2, au16NotesLeft[u8CurrentIndex]);
         PWMAudioOn(BUZZER2);
-         switch(au16NotesLeft[u8CurrentIndex])
-        {
-          case G2:
-            LedOn(WHITE);
-            LedOn(BLUE);
-            LedOn(GREEN);
-            LedOn(ORANGE);
-            LedOff(PURPLE);
-            LedOff(CYAN);
-            LedOff(YELLOW);
-            LedOff(RED);
-            break;
-           case F2:
-            LedOn(WHITE);
-            LedOn(BLUE);
-            LedOn(GREEN);
-            LedOn(ORANGE);
-            LedOff(PURPLE);
-            LedOff(CYAN);
-            LedOff(YELLOW);
-            LedOff(RED);
-            break;
-            
-        case D2:
-           LedOn(PURPLE);
-            LedOn(CYAN);
-            LedOn(YELLOW);
-            LedOn(RED);
-            break;
-            
-          default:
-            break;
-        }
+         
       }
       else
       {                
         PWMAudioOff(BUZZER2);
-        LedOff(WHITE);
-        LedOff(PURPLE);
-        LedOff(BLUE);
-        LedOff(CYAN);
-        LedOff(GREEN);
-        LedOff(YELLOW);
-        LedOff(ORANGE);
-        LedOff(RED);
+        
       }
     }
     else
     {
       PWMAudioOff(BUZZER2);
       
-      LedOff(WHITE);
-        LedOff(PURPLE);
-        LedOff(BLUE);
-        LedOff(CYAN);
-        LedOff(GREEN);
-        LedOff(YELLOW);
-        LedOff(ORANGE);
-        LedOff(RED);
+    
       
       u32LeftTimer = G_u32SystemTime1ms;
       u16CurrentDurationLeft = u16NoteSilentDurationLeft;
@@ -431,14 +332,9 @@ if(IsTimeUp(&u32LeftTimer, (u32)u16CurrentDurationLeft))
  case 0:
    PWMAudioOff(BUZZER1);
    PWMAudioOff(BUZZER2);
-   LedOff(WHITE);
-        LedOff(PURPLE);
-        LedOff(BLUE);
-        LedOff(CYAN);
-        LedOff(GREEN);
-        LedOff(YELLOW);
-        LedOff(ORANGE);
-        LedOff(RED);
+   u8IndexLeft=0;
+   u8IndexRight=0;
+  
    break;
  }
  }

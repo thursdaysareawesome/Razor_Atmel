@@ -17,8 +17,10 @@ Type Definitions
 /**********************************************************************************************************************
 Constants / Definitions
 **********************************************************************************************************************/
-#define TIMEDONE    (u32)30000
+#define TIMEDONE    (u32)60000
 #define CODELENGTH  (u8)4
+
+/*from userApp1*/
 /**********************************************************************************************************************
 Function Declarations
 **********************************************************************************************************************/
@@ -50,6 +52,9 @@ static void UserApp2SM_FailedInit(void);
 static void UserApp2SM_SetPassword(void);
 static void UserApp2SM_AttemptInProgress(void);
 static void UserApp2SM_ResetGame(void);
+static void UserApp2SM_Success(void);
+static void UserApp2SM_Failure(void);
+
 #endif /* __USER_APP2_H */
 
 
